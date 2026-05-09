@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — SecureVault{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 style="color:#f0f6fc; margin-bottom:4px;">Welcome, {{ current_user.username }}</h2>
+    <p style="color:#8b949e; margin-bottom:24px;">Your encrypted secrets are stored safely below.</p>
+
+    <!-- Add New Secret Form -->
+    <div class="card">
+        <h2>Add New Secret</h2>
+        <p style="color:#8b949e; font-size:13px; margin-bottom:16px;">
+            Your data will be <strong style="color:#3fb950;">encrypted with Fernet (AES-128-CBC)</strong> before being stored in the database.
+        </p>
+        <form method="POST" action="{{ url_for('add_secret') }}">
+            <div class="form-group">
+                <label for="title">Title</label>
+                <input type="text" id="title" name="title" required placeholder="e.g. Credit Card, Password, Secret Note">
+            </div>
+            <div class="form-group">
+                <label for="content">Sensitive Content</label>
+                <textarea id="content" name="content" required placeholder="Enter the data you want to encrypt and store..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-blue">Encrypt & Save</button>
+        </form>
+    </div>
+
+    <!-- Stored Secrets -->
+    <div class="card">
+        <h2>Your Secrets ({{ secrets|length }})</h2>
+
+        {% if secrets %}
+            {% for secret in secrets %}
+            <div class="secret-card">
+                <h3>{{ secret.title }}</h3>
+
+                <div class="decrypted">
+                    <strong>Decrypted:</strong> {{ secret.content }}
+                </div>
+
+                <button class="toggle-encrypted" onclick="toggleEncrypted('{{ secret.id }}')">
+                    Show/Hide Encrypted Data
+                </button>
+
+                <div id="enc-{{ secret.id }}" class="encrypted hidden">
+                    <strong>Stored in DB (encrypted):</strong><br>
+                    {{ secret.encrypted_content }}
+                </div>
+
+                <div class="meta">
+                    <span>{{ secret.created_at }}</span>
+                    <form method="POST" action="{{ url_for('delete_secret', secret_id=secret.id) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm"
+                                onclick="return confirm('Delete this secret?')">Delete</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="color:#484f58; text-align:center; padding:24px;">
+                No secrets yet. Add your first encrypted secret above.
+            </p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

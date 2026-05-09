@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SecureVault{% endblock %}</title>
+    <style>
+        /* ── Reset & Base ── */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0d1117;
+            color: #c9d1d9;
+            min-height: 100vh;
+        }
+
+        a { color: #58a6ff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* ── Navigation Bar ── */
+        nav {
+            background: #161b22;
+            border-bottom: 1px solid #30363d;
+            padding: 14px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        nav .logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: #58a6ff;
+            letter-spacing: 1px;
+        }
+
+        nav .logo span { color: #f0f6fc; }
+
+        nav .nav-links { display: flex; gap: 20px; align-items: center; }
+
+        nav .nav-links a {
+            color: #8b949e;
+            font-size: 14px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        nav .nav-links a:hover {
+            background: #21262d;
+            color: #f0f6fc;
+            text-decoration: none;
+        }
+
+        nav .nav-links .role-badge {
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .role-admin {
+            background: #1f6feb33;
+            color: #58a6ff;
+            border: 1px solid #1f6feb;
+        }
+
+        .role-user {
+            background: #23862533;
+            color: #3fb950;
+            border: 1px solid #238636;
+        }
+
+        .btn-logout {
+            background: #da3633;
+            color: #fff !important;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .btn-logout:hover { background: #f85149; }
+
+        /* ── Flash Messages ── */
+        .flash-container {
+            max-width: 700px;
+            margin: 16px auto 0;
+            padding: 0 20px;
+        }
+
+        .flash {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            border: 1px solid;
+        }
+
+        .flash-success {
+            background: #23862522;
+            border-color: #238636;
+            color: #3fb950;
+        }
+
+        .flash-error {
+            background: #da363322;
+            border-color: #da3633;
+            color: #f85149;
+        }
+
+        /* ── Main Content ── */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 32px 20px;
+        }
+
+        /* ── Cards ── */
+        .card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+
+        .card h2 {
+            color: #f0f6fc;
+            font-size: 20px;
+            margin-bottom: 16px;
+        }
+
+        /* ── Forms ── */
+        .form-group { margin-bottom: 16px; }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: #8b949e;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: #c9d1d9;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #58a6ff;
+            box-shadow: 0 0 0 3px #1f6feb33;
+        }
+
+        .form-group textarea { resize: vertical; min-height: 80px; }
+
+        /* ── Buttons ── */
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: #238636;
+            color: #fff;
+        }
+
+        .btn-primary:hover { background: #2ea043; }
+
+        .btn-blue {
+            background: #1f6feb;
+            color: #fff;
+        }
+
+        .btn-blue:hover { background: #388bfd; }
+
+        .btn-danger {
+            background: #da3633;
+            color: #fff;
+        }
+
+        .btn-danger:hover { background: #f85149; }
+
+        .btn-sm {
+            padding: 5px 12px;
+            font-size: 12px;
+        }
+
+        /* ── Tables ── */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid #21262d;
+            font-size: 14px;
+        }
+
+        th {
+            color: #8b949e;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── Auth Pages (Login / Register) ── */
+        .auth-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .auth-card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 10px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .auth-card h1 {
+            color: #f0f6fc;
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .auth-card .subtitle {
+            color: #8b949e;
+            text-align: center;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        .auth-card .auth-footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #8b949e;
+        }
+
+        /* ── Stat Cards ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-card .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #58a6ff;
+        }
+
+        .stat-card .stat-label {
+            font-size: 13px;
+            color: #8b949e;
+            margin-top: 4px;
+        }
+
+        /* ── Secret Cards ── */
+        .secret-card {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .secret-card h3 {
+            color: #f0f6fc;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .secret-card .decrypted {
+            color: #3fb950;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .secret-card .encrypted {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: #f0883e;
+            word-break: break-all;
+            background: #161b22;
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+
+        .secret-card .meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #484f58;
+        }
+
+        /* ── Error Pages ── */
+        .error-page {
+            text-align: center;
+            padding-top: 120px;
+        }
+
+        .error-page h1 {
+            font-size: 72px;
+            color: #da3633;
+            margin-bottom: 8px;
+        }
+
+        .error-page p {
+            font-size: 18px;
+            color: #8b949e;
+            margin-bottom: 24px;
+        }
+
+        /* ── Toggle encrypted view ── */
+        .toggle-encrypted {
+            font-size: 12px;
+            color: #58a6ff;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-family: inherit;
+        }
+
+        .toggle-encrypted:hover { text-decoration: underline; }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    {% if current_user.is_authenticated %}
+    <nav>
+        <div class="logo"><span>Secure</span>Vault</div>
+        <div class="nav-links">
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
+            {% if current_user.role == 'admin' %}
+                <a href="{{ url_for('admin_panel') }}">Admin Panel</a>
+            {% endif %}
+            <span class="role-badge {{ 'role-admin' if current_user.role == 'admin' else 'role-user' }}">
+                {{ current_user.role }}
+            </span>
+            <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+        </div>
+    </nav>
+    {% endif %}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-container">
+            {% for category, message in messages %}
+                <div class="flash flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+
+    <script>
+        // Toggle encrypted/decrypted view on secret cards
+        function toggleEncrypted(id) {
+            const el = document.getElementById('enc-' + id);
+            el.classList.toggle('hidden');
+        }
+    </script>
+</body>
+</html>

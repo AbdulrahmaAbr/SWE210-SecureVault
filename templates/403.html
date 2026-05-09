@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}403 Forbidden — SecureVault{% endblock %}
+
+{% block content %}
+<div class="container error-page">
+    <h1>403</h1>
+    <p>Access Denied — You do not have the required role to view this page.</p>
+    <p style="font-size:14px; color:#484f58; margin-bottom:24px;">
+        This page requires <strong style="color:#58a6ff;">admin</strong> privileges.
+        Your current role is <strong style="color:#3fb950;">user</strong>.
+    </p>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-primary">Back to Dashboard</a>
+</div>
+{% endblock %}

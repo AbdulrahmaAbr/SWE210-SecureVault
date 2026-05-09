@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Admin Panel — SecureVault{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 style="color:#f0f6fc; margin-bottom:4px;">Admin Panel</h2>
+    <p style="color:#8b949e; margin-bottom:24px;">
+        This page is restricted to <strong style="color:#58a6ff;">admin</strong> role only.
+        Regular users receive HTTP 403 Forbidden.
+    </p>
+
+    <!-- Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.total_users }}</div>
+            <div class="stat-label">Total Users</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.total_admins }}</div>
+            <div class="stat-label">Admins</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.total_secrets }}</div>
+            <div class="stat-label">Encrypted Secrets</div>
+        </div>
+    </div>
+
+    <!-- User Management Table -->
+    <div class="card">
+        <h2>User Management</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Role</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td style="color:#f0f6fc; font-weight:600;">{{ user.username }}</td>
+                    <td>
+                        <span class="role-badge {{ 'role-admin' if user.role == 'admin' else 'role-user' }}">
+                            {{ user.role }}
+                        </span>
+                    </td>
+                    <td style="font-size:12px; color:#484f58;">{{ user.created_at[:10] }}</td>
+                    <td>
+                        {% if user.role == 'user' %}
+                        <form method="POST" action="{{ url_for('promote_user', user_id=user.id) }}" style="display:inline;">
+                            <button type="submit" class="btn btn-blue btn-sm"
+                                    onclick="return confirm('Promote {{ user.username }} to admin?')">
+                                Promote
+                            </button>
+                        </form>
+                        {% elif user.id != current_user.id %}
+                        <form method="POST" action="{{ url_for('demote_user', user_id=user.id) }}" style="display:inline;">
+                            <button type="submit" class="btn btn-danger btn-sm"
+                                    onclick="return confirm('Demote {{ user.username }} to user?')">
+                                Demote
+                            </button>
+                        </form>
+                        {% else %}
+                        <span style="color:#484f58; font-size:12px;">You</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
